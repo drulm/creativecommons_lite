@@ -1,0 +1,10 @@
+; $Id$
+name = Creativecommons Lite
+description = Allow User to add Creative Commons Licenses for selected content type.
+package = Licenses
+version = VERSION
+
+; Information added by drupal.org packaging script on 2007-01-30
+version = "5.1"
+project = "drupal"
+
