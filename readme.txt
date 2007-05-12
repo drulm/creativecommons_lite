@@ -33,12 +33,8 @@ INSTALLATION
 
 TO DO
 
-- Track referrals with cookies, not just within a session.
-- Report on raw & unique clicks, signups, and sales by time period.
-- Affiliates can see reports of their affiliate activity
-- Affiliates can earn commissions based on sales to referred users.
-- Affiliates sessions allow automatic role_discount for ecomerce purchases
-- Affiliates based links allow for affiliate theme to be presented
+- enable site wide licensing 
+- update will all available licenses
 
 CREDITS
 
