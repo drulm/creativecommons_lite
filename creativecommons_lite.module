@@ -84,7 +84,7 @@ function creativecommons_lite_form($node) {
 
   //$cc_img = '<img src="/' . drupal_get_path('module', 'creativecommons_lite') . '/images/cc_logo_transparent.gif" alt="Creative Commons licenses" />';
 
-  $cc_img = '<img src="/' . path_to_theme() . '/modules/creativecommons/images/cc-choose-license.png" alt="'.t('Creative Commons licenses').'" /> ';
+  $cc_img = '<img src="/' . path_to_theme() . '/modules/creativecommons/images/cc-choose-license.gif" alt="'.t('Creative Commons licenses').'" /> ';
 
   $cc_txt = '<p><a href="http://creativecommons.org/learn/licenses/" target="_blank">'.t('Creative Commons licenses').'</a> '.
 
@@ -586,7 +586,7 @@ function get_license_info( $license ) {
    }
 		  
 		  foreach($images as $k => $img_uri)
-     	    $images[$k] = '<img alt="Creative Commons License" border="0" src="'.url($img_uri).'" />';
+     	    $images[$k] = '<img alt="Creative Commons License" border="0" src="'.base_path().$img_uri.'" />';
 			
           $license_info['images'] = $images;
   
