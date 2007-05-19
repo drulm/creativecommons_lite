@@ -28,7 +28,7 @@ function creativecommons_lite_install() {
  * hook uninstall -- uninstall cclite table 
  *
  */
-function profile_uninstall() { 
+function creativecommons_lite_uninstall() { 
 
   db_query('DROP TABLE {creativecommons_lite}');
   // delete all variable node type variable_get creativecommons_lite_$node->type
