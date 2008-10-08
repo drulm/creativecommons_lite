@@ -43,7 +43,7 @@ function creativecommons_lite_menu() {
 		'description' => t('Configure the Creative Commons licence settings.'),
 		'page callback' => 'drupal_get_form',
 		'page arguments' =>  array('creativecommons_lite_settings_form'),
-		'access callback' => user_access('administer creative commons lite')
+		'access arguments' => array('administer creative commons lite')
 	);
 	
 	return $items; 
