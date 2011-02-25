@@ -1,4 +1,3 @@
-; $Id$
 name = Creativecommons Lite
 description = Allow User to add Creative Commons Licenses for selected content type.
 package = Licenses
