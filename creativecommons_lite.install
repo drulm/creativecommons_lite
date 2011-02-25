@@ -1,6 +1,5 @@
 <?php
 
-// $Id$ drupal 4.7 compatible
 function creativecommons_lite_install() {
 
     switch ($GLOBALS['db_type']) {
