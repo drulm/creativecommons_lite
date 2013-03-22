@@ -5,16 +5,16 @@
  */
 function creativecommons_lite_schema() {
   $schema['creativecommons_lite'] = array(
-    'description' => t('Creative Commons license to node mapping.'),
+    'description' => 'Creative Commons license to node mapping.',
     'fields' => array(
       'nid' => array(
-        'description' => t('Node identifier.'),
+        'description' => 'Node identifier.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE
       ),
       'license' => array(
-        'description' => t('Creative Commons node license.'),
+        'description' => 'Creative Commons node license.',
         'type' => 'varchar',
         'not null' => TRUE,
         'length' => 12,
@@ -32,14 +32,8 @@ function creativecommons_lite_schema() {
  * Implementation of hook_install()
  */
 function creativecommons_lite_install() {
-  $result = drupal_install_schema('creativecommons_lite');
-  
-  if (count($result) > 0) {
-    drupal_set_message(t('Creative Commons Lite module installed.'));
-  }
-  else {
-    drupal_set_message(t('Creative Commons Lite table creation failed. Please "uninstall" the module and retry.'));
-  }
+  drupal_set_message(t('Creative Commons Lite module installed.'));
+  return;
 }
 
 
@@ -47,8 +41,6 @@ function creativecommons_lite_install() {
  * Implementation of hook_uninstall().
  */
 function creativecommons_lite_uninstall() { 
-  drupal_uninstall_schema('creativecommons_lite');
-  
   variable_del('creativecommons_lite_mandatory');
   variable_del('creativecommons_lite_default_licence');
   variable_del('creativecommons_lite_default_license');
@@ -59,6 +51,7 @@ function creativecommons_lite_uninstall() {
   variable_del('creativecommons_lite_no_text');
   
   // TODO: remove the content type variables
+  return;
 }
 
 function creativecommons_lite_update_6000() {
@@ -72,5 +65,5 @@ function creativecommons_lite_update_6000() {
   variable_set('creativecommons_lite_license_options', variable_get('creativecommons_lite_licence_options', ''));
   variable_del('creativecommons_lite_licence_options');
   
-  return $ret;
+  return;
 } 

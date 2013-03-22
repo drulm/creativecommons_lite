@@ -26,7 +26,7 @@ function para() {
 /**
  * Implementation of hook_perm().
  */
-function creativecommons_lite_perm() {
+function creativecommons_lite_permission() {
   return array('administer creative commons lite');
 }
 
@@ -270,7 +270,7 @@ function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
         }
         
         $nid = (int)arg(1);
-        $node = node_load(array('nid'=>$nid));
+        $node = node_load($nid);
         
         if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2)=='view') || (arg(2)=='') ) ) {
           if ($node->cc_lite_license) {
