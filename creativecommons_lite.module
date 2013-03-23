@@ -27,7 +27,12 @@ function para() {
  * Implementation of hook_perm().
  */
 function creativecommons_lite_permission() {
-  return array('administer creative commons lite');
+  return array(
+    'administer creative commons lite' => array(
+      'title' => t('Administer Creative Commons Lite'),
+      'description' => t('Perform administration tasks for Creative Commons Lite.'),
+    ),
+  );
 }
 
 
@@ -140,11 +145,10 @@ function creativecommons_lite_settings_form() {
 /**
  * Implementation of hook_form_alter().
  */
-function creativecommons_lite_form_alter(&$form, $form_state, $form_id) {
+function creativecommons_lite_form_alter(&$form, &$form_state, $form_id) {
   // setting for which content type this will show up 
   if ($form_id == 'node_type_form' && isset($form['identity']['type'])) {
     $node_type = $form['#node_type']->type;
-    
     $form['workflow']["creativecommons_lite"] = array(
       '#type' => 'checkbox',
       '#title' => t('Allow user to add a Creative Commons license.'),
@@ -153,10 +157,9 @@ function creativecommons_lite_form_alter(&$form, $form_state, $form_id) {
       '#default_value' => variable_get("creativecommons_lite_$node_type", 0),
     );
   }
-  elseif (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
+  elseif (isset($form["form_id"]["#id"]) && $form["form_id"]["#id"] == "edit-node-type-form") {
     // add license selection field to node
-    $node = $form['#node'];   // got form 
-    
+    $node = $form['#node_type'];   // got form 
     if (variable_get("creativecommons_lite_$node->type", 0)) {
       $form = array_merge($form, creativecommons_lite_form($node));
       $form['creativecommons_lite']['#weight'] = 29;  //  30 comment and menu and after that author and publishing
@@ -217,9 +220,7 @@ function creativecommons_lite_form($node) {
  */
 function get_license_html($license) {
   $license_info = get_license_info($license);
-  
   $html = "\n<!--Creative Commons License-->\n";
-  
   if (variable_get('creativecommons_lite_icon_style', 'buttons_large') != 'none') {
     if ($img = $license_info['images']) {
       foreach ($img as $img_tag) {
@@ -245,11 +246,48 @@ function get_license_html($license) {
   return $html;
 }
 
+/**
+ * Implementation of hook_block_info().
+ */
+function creativecommons_lite_block_info() {
+  $blocks['creative_common_lite'] = array(
+    'info' => t('Creative Commons license'),
+    'status' => TRUE,
+    'weight' => 0, 
+    'enabled' => 1,   // default make it enabled 
+    'region' => 'sidebar_first',
+    'visibility' => BLOCK_VISIBILITY_PHP,
+    'pages' => '<?php global $user; if ($user->uid == 0) return TRUE; else return FALSE; ?>'
+  );
+  return $blocks;
+}
+
+function creativecommons_lite_block_view($delta = '') {
+  $block = array();
+    switch ($delta) {
+      case 0:
+        if (!is_numeric(arg(1))) {
+          return;
+        }
+        $nid = (int)arg(1);
+        $node = node_load($nid);
+        if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2)=='view') || (arg(2)=='') ) ) {
+          if ($node->cc_lite_license) {
+            // append html 
+            $output = get_license_html($node->cc_lite_license);
+            if ($output) { 
+              $block['content'] =  '<p class="creativecommons">'.$output.'</p>';
+            }
+          }
+        }
+      return $block;
+    }
+}
 
 /**
  * Implementation of hook_block().
  */
-function creativecommons_lite_block($op='list', $delta=0, $edit = array()) { 
+/*function creativecommons_lite_block($op='list', $delta=0, $edit = array()) { 
   // listing of blocks, such as on the admin/block page
   if ($op == "list") { 
     $blocks[0] = array(
@@ -261,7 +299,7 @@ function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
     );
     
     return $blocks;
-  } 
+  }
   elseif ($op == 'view') {
     switch ($delta) {
       case 0:
@@ -287,7 +325,7 @@ function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
     }
   }
 } 
-
+*/
 
 /**
  * Return array of available licenses
@@ -437,7 +475,7 @@ function creativecommons_lite_nodeapi(&$node, $op, $a3, $a4) {
       }
       
       break;
-    case 'rss item':
+    case NODE_BUILD_RSS:
       break;
   }
   
