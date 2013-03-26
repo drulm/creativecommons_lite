@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This module will display Creative Common licenses for selected content type 
+ * This module will display Creative Common licenses for selected content type
  *
  */
 
@@ -15,11 +15,11 @@ define('CC_LITE_IMAGE_PATH', base_path() . CC_LITE_PATH . '/images/');
 function para() {
   $args = func_get_args();
   $p = '';
-  
+
   foreach ($args as $c) {
     $p .= "<p>$c</p>";
   }
-  
+
   return $p;
 }
 
@@ -41,16 +41,16 @@ function creativecommons_lite_permission() {
  */
 function creativecommons_lite_menu() {
   $items = array();
-  
+
   $items['admin/settings/creativecommons-lite'] = array(
     'title' => 'Creative Commons Lite',
     'description' => 'Configure the Creative Commons license settings.',
     'page callback' => 'drupal_get_form',
-    'page arguments' =>  array('creativecommons_lite_settings_form'),
-    'access arguments' => array('administer creative commons lite')
+    'page arguments' => array('creativecommons_lite_settings_form'),
+    'access arguments' => array('administer creative commons lite'),
   );
-  
-  return $items; 
+
+  return $items;
 }
 
 
@@ -62,7 +62,7 @@ function creativecommons_lite_help($path, $arg) {
   $cc_lite_desc_short = t('Assign a Creative Commons license to content that appears on the site.');
   $cc_lite_node = t('Attaching a Creative Commons license to a node within Drupal can designate the content of that node, as well as any attached files, as Creatively Commoned material.');
   $cc_lite_url = sprintf(t('Visit %s for more information.'), '<a href="http://creativecommons.org/learnmore">' . t('the Creative Commons website') . '</a>');
-  
+
   switch ($path) {
     case 'admin/modules#description':
       return $cc_lite_desc_short;
@@ -80,21 +80,21 @@ function creativecommons_lite_help($path, $arg) {
 function creativecommons_lite_settings_form() {
   // Get all CC license types
   $types = creativecommons_lite_get_license_array();
-  
+
   $form['creativecommons_lite_mandatory'] = array(
     '#type' => 'checkbox',
     '#title' => t('Mandatory license specification'),
     '#description' => t('Specifies whether or not the user is required to specify a license.'),
     '#default_value' => variable_get('creativecommons_lite_mandatory', 0),
   );
-  
+
   $form['creativecommons_lite_no_text'] = array(
     '#type' => 'checkbox',
     '#title' => t('Don\'t display license text'),
     '#description' => t('Specifies whether or not the license text should be displayed underneath the license icons.'),
     '#default_value' => variable_get('creativecommons_lite_no_text', 0),
   );
-  
+
   $license_icons = array(
     'buttons_large' => '<img alt="' . $types['by-nc-sa'] . '" src="' . CC_LITE_IMAGE_PATH . 'buttons_large/by-nc-sa.png" />',
     'buttons_small' => '<img alt="' . $types['by-nc-sa'] . '" src="' . CC_LITE_IMAGE_PATH . 'buttons_small/by-nc-sa.png" />',
@@ -102,14 +102,14 @@ function creativecommons_lite_settings_form() {
     'button_srr' => '<img alt="' . t('Some Rights Reserved') . '" src="' . CC_LITE_IMAGE_PATH . 'somerights20.png" />',
     'none' => t('No icon'),
   );
-  
+
   $form['creativecommons_lite_icon_style'] = array(
     '#type' => 'radios',
     '#title' => t('License icon style'),
     '#options' => $license_icons,
     '#default_value' => variable_get('creativecommons_lite_icon_style', 'buttons_large'),
   );
-  
+
   $form['creativecommons_lite_default_license'] = array(
     '#type' => 'select',
     '#title' => t('Default license'),
@@ -117,10 +117,10 @@ function creativecommons_lite_settings_form() {
     '#options' => $types,
     '#default_value' => variable_get('creativecommons_lite_default_license', ''),
   );
-  
+
   // Remove the first empty option from the license types
   array_shift($types);
-  
+
   $form['creativecommons_lite_license_options'] = array(
     '#type' => 'select',
     '#title' => t('Allowed licenses'),
@@ -129,7 +129,7 @@ function creativecommons_lite_settings_form() {
     '#multiple' => TRUE,
     '#default_value' => variable_get('creativecommons_lite_license_options', array_keys($types)),
   );
-  
+
   $form['creativecommons_lite_jurisdiction'] = array(
     '#type' => 'select',
     '#title' => t('License jurisdiction'),
@@ -137,7 +137,7 @@ function creativecommons_lite_settings_form() {
     '#options' => creativecommons_lite_get_jurisdiction_array('names'),
     '#default_value' => variable_get('creativecommons_lite_jurisdiction', ''),
   );
-  
+
   return system_settings_form($form);
 }
 
@@ -146,7 +146,7 @@ function creativecommons_lite_settings_form() {
  * Implementation of hook_form_alter().
  */
 function creativecommons_lite_form_alter(&$form, &$form_state, $form_id) {
-  // setting for which content type this will show up 
+  // setting for which content type this will show up
   if ($form_id == 'node_type_form' && isset($form['identity']['type'])) {
     $node_type = $form['#node_type']->type;
     $form['workflow']["creativecommons_lite"] = array(
@@ -159,10 +159,10 @@ function creativecommons_lite_form_alter(&$form, &$form_state, $form_id) {
   }
   elseif (isset($form["form_id"]["#id"]) && $form["form_id"]["#id"] == "edit-node-type-form") {
     // add license selection field to node
-    $node = $form['#node_type'];   // got form 
+    $node = $form['#node_type']; // got form
     if (variable_get("creativecommons_lite_$node->type", 0)) {
       $form = array_merge($form, creativecommons_lite_form($node));
-      $form['creativecommons_lite']['#weight'] = 29;  //  30 comment and menu and after that author and publishing
+      $form['creativecommons_lite']['#weight'] = 29; //  30 comment and menu and after that author and publishing
     }
   }
 }
@@ -171,23 +171,23 @@ function creativecommons_lite_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Implementation of hook_form().
  */
-function creativecommons_lite_form($node) {	
+function creativecommons_lite_form($node) {
   $description = para(
     sprintf(t('%s help you share your work while keeping your copyright. Other people can copy and distribute your work provided they give you credit&mdash;and only on the conditions you specify here.'), '<a href="http://creativecommons.org/learn/licenses/">' . t('Creative Commons licenses') . '</a>') .
-    ' ' . sprintf(t('Visit the Creative Commons website for an %s'), '<a href="http://creativecommons.org/about/licenses/meet-the-licenses">' . t('explanation of the different licenses') . '.</a>'), 
+    ' ' . sprintf(t('Visit the Creative Commons website for an %s'), '<a href="http://creativecommons.org/about/licenses/meet-the-licenses">' . t('explanation of the different licenses') . '.</a>'),
     sprintf(t('Choose the %s if you want to offer your work with no conditions.'), '<a href="http://creativecommons.org/licenses/publicdomain/">' . t('Public Domain license') . '</a>')
   );
-  
+
   $types = array();
-  
+
   // available license types
   $types = creativecommons_lite_get_license_array(variable_get('creativecommons_lite_license_options', NULL));
-  
+
   // default to the default license or the first license if no default license is set except for existing nodes.
   if (!array_key_exists('cc_lite_license', $node)) {
     $node->cc_lite_license = variable_get('creativecommons_lite_default_license', key($types));
   }
-  
+
   $form['creativecommons_lite'] = array(
     '#type' => 'fieldset',
     '#title' => t('Creative Commons license'),
@@ -196,9 +196,9 @@ function creativecommons_lite_form($node) {
     '#collapsed' => FALSE,
     '#tree' => TRUE,
   );
-  
+
   $form['creativecommons_lite'][] = array('#value' => $description);
-  
+
   $form['creativecommons_lite']['cclite_select_license_form']['cc_lite_license'] = array(
     '#type' => 'select',
     '#tree' => FALSE,
@@ -207,7 +207,7 @@ function creativecommons_lite_form($node) {
     '#options' => $types,
     '#required' => variable_get('creativecommons_lite_mandatory', FALSE),
   );
-  
+
   return $form;
 }
 
@@ -225,24 +225,25 @@ function get_license_html($license) {
     if ($img = $license_info['images']) {
       foreach ($img as $img_tag) {
         $html .= l($img_tag, $license_info['license_uri'], array(
-                    'attributes' => array('rel' => 'license', 'title' => $license_info['license_name']), 
-                    'html' => TRUE)
+          'attributes' => array('rel' => 'license', 'title' => $license_info['license_name']),
+          'html' => TRUE,
+        )
                   ) . "\n";
       }
-      
+
       $html .= '<br />';
     }
   }
-  
+
   if (!variable_get('creativecommons_lite_no_text', 0)) {
     $html .= t('This work is licensed under a') .
             ' ' . l($license_info['license_name'] .
             ' ' . t('Creative Commons license'), $license_info['license_uri'], array('attributes' => array('rel' => 'license'))) .
             "<br />\n";
   }
-  
+
   $html .= "<!--/Creative Commons License-->\n";
-  
+
   return $html;
 }
 
@@ -253,79 +254,79 @@ function creativecommons_lite_block_info() {
   $blocks['creative_common_lite'] = array(
     'info' => t('Creative Commons license'),
     'status' => TRUE,
-    'weight' => 0, 
-    'enabled' => 1,   // default make it enabled 
+    'weight' => 0,
+    'enabled' => 1, // default make it enabled
     'region' => 'sidebar_first',
     'visibility' => BLOCK_VISIBILITY_PHP,
-    'pages' => '<?php global $user; if ($user->uid == 0) return TRUE; else return FALSE; ?>'
+    'pages' => '<?php global $user; if ($user->uid == 0) return TRUE; else return FALSE; ?>',
   );
   return $blocks;
 }
 
 function creativecommons_lite_block_view($delta = '') {
   $block = array();
-    switch ($delta) {
-      case 0:
-        if (!is_numeric(arg(1))) {
-          return;
-        }
-        $nid = (int)arg(1);
-        $node = node_load($nid);
-        if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2)=='view') || (arg(2)=='') ) ) {
-          if ($node->cc_lite_license) {
-            // append html 
-            $output = get_license_html($node->cc_lite_license);
-            if ($output) { 
-              $block['content'] =  '<p class="creativecommons">' . $output . '</p>';
-            }
+  switch ($delta) {
+    case 0:
+      if (!is_numeric(arg(1))) {
+        return;
+      }
+      $nid = (int) arg(1);
+      $node = node_load($nid);
+      if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2) == 'view') || (arg(2) == '') ) ) {
+        if ($node->cc_lite_license) {
+          // append html
+          $output = get_license_html($node->cc_lite_license);
+          if ($output) {
+            $block['content'] =  '<p class="creativecommons">' . $output . '</p>';
           }
         }
+      }
       return $block;
-    }
+  }
 }
 
 /**
  * Implementation of hook_block().
  */
-/*function creativecommons_lite_block($op='list', $delta=0, $edit = array()) { 
-  // listing of blocks, such as on the admin/block page
-  if ($op == "list") { 
-    $blocks[0] = array(
-      'info' => t('Creative Commons license'),
-      'weight' => 0, 
-      'enabled' => 1,   // default make it enabled 
-      'region' => 'right',  // garland has no right default
-      'theme'=>'garland',
-    );
-    
-    return $blocks;
-  }
-  elseif ($op == 'view') {
-    switch ($delta) {
-      case 0:
-        if (!is_numeric(arg(1))) {
-          return;
-        }
-        
-        $nid = (int)arg(1);
-        $node = node_load($nid);
-        
-        if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2)=='view') || (arg(2)=='') ) ) {
-          if ($node->cc_lite_license) {
-            // append html 
-            $output = get_license_html($node->cc_lite_license);
-            
-            if ($output) { 
-              $block['content'] =  '<p class="creativecommons">'.$output.'</p>';
-            }
-          }
-        }
-        
-      return $block;
-    }
-  }
-} 
-*/
+/*function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
+ // listing of blocks, such as on the admin/block page
+ if ($op == "list") {
+ $blocks[0] = array(
+ 'info' => t('Creative Commons license'),
+ 'weight' => 0,
+ 'enabled' => 1,   // default make it enabled
+ 'region' => 'right',  // garland has no right default
+ 'theme'=>'garland',
+ );
+
+ return $blocks;
+ }
+ elseif ($op == 'view') {
+ switch ($delta) {
+ case 0:
+ if (!is_numeric(arg(1))) {
+ return;
+ }
+
+ $nid = (int)arg(1);
+ $node = node_load($nid);
+
+ if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2)=='view') || (arg(2)=='') ) ) {
+ if ($node->cc_lite_license) {
+ // append html
+ $output = get_license_html($node->cc_lite_license);
+
+ if ($output) {
+ $block['content'] =  '<p class="creativecommons">'.$output.'</p>';
+ }
+ }
+ }
+
+ return $block;
+ }
+ }
+ }
+ */
 
 /**
  * Return array of available licenses
@@ -334,7 +335,7 @@ function creativecommons_lite_block_view($delta = '') {
  */
 function creativecommons_lite_get_license_array($options = NULL) {
   $types = array();
-  
+
   $types['by'] = t('Attribution');
   $types['by-nd'] = t('Attribution No Derivatives');
   $types['by-nc-nd'] =  t('Attribution Non-commercial No Derivatives');
@@ -342,15 +343,15 @@ function creativecommons_lite_get_license_array($options = NULL) {
   $types['by-nc-sa'] = t('Attribution Non-commercial Share Alike');
   $types['by-sa'] =  t('Attribution Share Alike');
   $types['publicdomain'] = t('Public Domain');
-  
+
   // Only include the provided options
   if (is_array($options)) {
     $types = array_intersect_key($types, $options);
   }
-  
+
   // Add an empty option to the beginning of the types
   $types = array_merge(array('' => ''), $types);
-  
+
   return $types;
 }
 
@@ -359,69 +360,201 @@ function creativecommons_lite_get_jurisdiction_array($filter = NULL) {
   // Available jurisdictions as of 2008-02-18 retrieved from: http://api.creativecommons.org/rest/1.5/support/jurisdictions
   // License version of each jurisdiction as of 2008-02-18 retrieved for each jurisdiction from http://creativecommons.org/licenses/by-nc-sa/<jurisdiction>/
   $jurisdictions = array(
-    '' => array('name' => '', 'version' => '3.0'), 
-    'ar' => array('name' => 'Argentina', 'version' => '2.5'),
-    'au' => array('name' => 'Australia', 'version' => '2.5'),
-    'at' => array('name' => 'Austria', 'version' => '2.0'),
-    'be' => array('name' => 'Belgium', 'version' => '2.0'),
-    'br' => array('name' => 'Brazil', 'version' => '2.5'),
-    'bg' => array('name' => 'Bulgaria', 'version' => '2.5'),
-    'ca' => array('name' => 'Canada', 'version' => '2.5'),
-    'cl' => array('name' => 'Chile', 'version' => '2.0'),
-    'cn' => array('name' => 'China Mainland', 'version' => '2.5'),
-    'co' => array('name' => 'Colombia', 'version' => '2.5'),
-    'hr' => array('name' => 'Croatia', 'version' => '2.5'),
-    'hu' => array('name' => 'Hungary', 'version' => '2.5'),
-    'dk' => array('name' => 'Denmark', 'version' => '2.5'),
-    'fi' => array('name' => 'Finland', 'version' => '1.0'),
-    'fr' => array('name' => 'France', 'version' => '2.0'),
-    'de' => array('name' => 'Germany', 'version' => '2.0'),
-    'il' => array('name' => 'Israel', 'version' => '2.5'),
-    'in' => array('name' => 'India', 'version' => '2.5'),
-    'it' => array('name' => 'Italy', 'version' => '2.5'),
-    'jp' => array('name' => 'Japan', 'version' => '2.1'),
-    'kr' => array('name' => 'Korea', 'version' => '2.0'),
-    'mk' => array('name' => 'Macedonia', 'version' => '2.5'),
-    'my' => array('name' => 'Malaysia', 'version' => '2.5'),
-    'mt' => array('name' => 'Malta', 'version' => '2.5'),
-    'mx' => array('name' => 'Mexico', 'version' => '2.5'),
-    'nl' => array('name' => 'Netherlands', 'version' => '3.0'),
-    'pe' => array('name' => 'Peru', 'version' => '2.5'),
-    'ph' => array('name' => 'Philippines', 'version' => '3.0'),
-    'pl' => array('name' => 'Poland', 'version' => '2.5'),
-    'pt' => array('name' => 'Portugal', 'version' => '2.5'),
-    'si' => array('name' => 'Slovenia', 'version' => '2.5'),
-    'za' => array('name' => 'South Africa', 'version' => '2.5'),
-    'es' => array('name' => 'Spain', 'version' => '2.5'),
-    'se' => array('name' => 'Sweden', 'version' => '2.5'),
-    'ch' => array('name' => 'Switzerland', 'version' => '2.5'),
-    'tw' => array('name' => 'Taiwan', 'version' => '2.5'),
-    'uk' => array('name' => 'UK: England & Wales', 'version' => '2.0'),
-    'scotland' => array('name' => 'UK: Scotland', 'version' => '2.5'),
-    'us' => array('name' => 'United States', 'version' => '3.0'),
-    'gr' => array('name' => 'Greece', 'version' => '3.0'),
-    'lu' => array('name' => 'Luxembourg', 'version' => '3.0'),
-    'nz' => array('name' => 'New Zealand', 'version' => '3.0'),
-    'rs' => array('name' => 'Serbia', 'version' => '3.0')
+    '' => array(
+      'name' => '',
+      'version' => '3.0',
+    ),
+    'ar' => array(
+      'name' => 'Argentina',
+      'version' => '2.5',
+    ),
+    'au' => array(
+      'name' => 'Australia',
+      'version' => '2.5',
+    ),
+    'at' => array(
+      'name' => 'Austria',
+      'version' => '2.0',
+    ),
+    'be' => array(
+      'name' => 'Belgium',
+      'version' => '2.0',
+    ),
+    'br' => array(
+      'name' => 'Brazil',
+      'version' => '2.5',
+    ),
+    'bg' => array(
+      'name' => 'Bulgaria',
+      'version' => '2.5',
+    ),
+    'ca' => array(
+      'name' => 'Canada',
+      'version' => '2.5',
+    ),
+    'cl' => array(
+      'name' => 'Chile',
+      'version' => '2.0',
+    ),
+    'cn' => array(
+      'name' => 'China Mainland',
+      'version' => '2.5',
+    ),
+    'co' => array(
+      'name' => 'Colombia',
+      'version' => '2.5',
+    ),
+    'hr' => array(
+      'name' => 'Croatia',
+      'version' => '2.5',
+    ),
+    'hu' => array(
+      'name' => 'Hungary',
+      'version' => '2.5',
+    ),
+    'dk' => array(
+      'name' => 'Denmark',
+      'version' => '2.5',
+    ),
+    'fi' => array(
+      'name' => 'Finland',
+      'version' => '1.0',
+    ),
+    'fr' => array(
+      'name' => 'France',
+      'version' => '2.0',
+    ),
+    'de' => array(
+      'name' => 'Germany',
+      'version' => '2.0',
+    ),
+    'il' => array(
+      'name' => 'Israel',
+      'version' => '2.5',
+    ),
+    'in' => array(
+      'name' => 'India',
+      'version' => '2.5',
+    ),
+    'it' => array(
+      'name' => 'Italy',
+      'version' => '2.5',
+    ),
+    'jp' => array(
+      'name' => 'Japan',
+      'version' => '2.1',
+    ),
+    'kr' => array(
+      'name' => 'Korea',
+      'version' => '2.0',
+    ),
+    'mk' => array(
+      'name' => 'Macedonia',
+      'version' => '2.5',
+    ),
+    'my' => array(
+      'name' => 'Malaysia',
+      'version' => '2.5',
+    ),
+    'mt' => array(
+      'name' => 'Malta',
+      'version' => '2.5',
+    ),
+    'mx' => array(
+      'name' => 'Mexico',
+      'version' => '2.5',
+    ),
+    'nl' => array(
+      'name' => 'Netherlands',
+      'version' => '3.0',
+    ),
+    'pe' => array(
+      'name' => 'Peru',
+      'version' => '2.5',
+    ),
+    'ph' => array(
+      'name' => 'Philippines',
+      'version' => '3.0',
+    ),
+    'pl' => array(
+      'name' => 'Poland',
+      'version' => '2.5',
+    ),
+    'pt' => array(
+      'name' => 'Portugal',
+      'version' => '2.5',
+    ),
+    'si' => array(
+      'name' => 'Slovenia',
+      'version' => '2.5',
+    ),
+    'za' => array(
+      'name' => 'South Africa',
+      'version' => '2.5',
+    ),
+    'es' => array(
+      'name' => 'Spain',
+      'version' => '2.5',
+    ),
+    'se' => array(
+      'name' => 'Sweden',
+      'version' => '2.5',
+    ),
+    'ch' => array(
+      'name' => 'Switzerland',
+      'version' => '2.5',
+    ),
+    'tw' => array(
+      'name' => 'Taiwan',
+      'version' => '2.5',
+    ),
+    'uk' => array(
+      'name' => 'UK: England & Wales',
+      'version' => '2.0',
+    ),
+    'scotland' => array(
+      'name' => 'UK: Scotland',
+      'version' => '2.5',
+    ),
+    'us' => array(
+      'name' => 'United States',
+      'version' => '3.0',
+    ),
+    'gr' => array(
+      'name' => 'Greece',
+      'version' => '3.0',
+    ),
+    'lu' => array(
+      'name' => 'Luxembourg',
+      'version' => '3.0',
+    ),
+    'nz' => array(
+      'name' => 'New Zealand',
+      'version' => '3.0',
+    ),
+    'rs' => array(
+      'name' => 'Serbia',
+      'version' => '3.0',
+    ),
   );
-  
+
   switch ($filter) {
     case 'names':
       $names = array();
-      
+
       foreach ($jurisdictions as $key => $value) {
         $names[$key] = $value['name'];
       }
-      
+
       return $names;
       break;
     case 'versions':
       $versions = array();
-      
+
       foreach ($jurisdictions as $key => $value) {
         $versions[$key] = $value['version'];
       }
-      
+
       return $versions;
       break;
     default:
@@ -438,99 +571,99 @@ function creativecommons_lite_nodeapi(&$node, $op, $a3, $a4) {
     case 'validate':
       break;
     case 'load':
-      if (variable_get("creativecommons_lite_$node->type", 0)) { 
-        $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid=%d",  $node->nid);
+      if (variable_get("creativecommons_lite_$node->type", 0)) {
+        $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid=%d",   $node->nid);
         $res = db_fetch_array($result);
         $node->cc_lite_license = $res['license'];
       }
-      
+
       break;
     case 'view':
-      // added block view 
+      // added block view
       break;
     case 'insert':
-      if (variable_get("creativecommons_lite_$node->type", 0)) { 
-        $result = db_query("INSERT INTO {creativecommons_lite} (nid, license) VALUES (%d, '%s')",  $node->nid, $node->cc_lite_license);
+      if (variable_get("creativecommons_lite_$node->type", 0)) {
+        $result = db_query("INSERT INTO {creativecommons_lite} (nid, license) VALUES (%d, '%s')",   $node->nid, $node->cc_lite_license);
       }
-      
+
       break;
     case 'update':
       if (variable_get("creativecommons_lite_$node->type", 0)) {
         //check to see if this node already has a license
-        $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid = %d",  $node->nid);
+        $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid = %d",   $node->nid);
         $license = db_fetch_object($result);
-        
-        if (!$license) {  
+
+        if (!$license) {
           return creativecommons_lite_nodeapi($node, 'insert', $a3, $a4);
         }
-        
-        // update node license 
+
+        // update node license
         $result = db_query("UPDATE {creativecommons_lite} SET license='%s' WHERE nid=%d ", $node->cc_lite_license, $node->nid);
       }
-      
+
       break;
     case 'delete':
       if (variable_get("creativecommons_lite_$node->type", 0)) {
         db_query("DELETE FROM {creativecommons_lite} WHERE nid=%d", $node->nid);
       }
-      
+
       break;
     case NODE_BUILD_RSS:
       break;
   }
-  
-  return $output;  
+
+  return $output;
 }
 
 
 function get_license_info($license) {
   $license_info = array();
   $images = array();
-  
+
   $uri = 'http://creativecommons.org/licenses/';
   $jurisdiction = variable_get('creativecommons_lite_jurisdiction', '');
   $icon_style = variable_get('creativecommons_lite_icon_style', 'buttons_large');
-  
+
   $types = creativecommons_lite_get_license_array();
   $versions = creativecommons_lite_get_jurisdiction_array('versions');
-  
+
   $license_version = $versions[$jurisdiction] . '/' . ($jurisdiction != '' ? $jurisdiction . '/' : '');
-  
+
   $license_info['license_name'] = $types[$license];
   $license_info['license_uri'] = $uri . $license . '/' . ($license != 'publicdomain' ? $license_version : '');
-  
+
   if ($icon_style != 'none') {
     switch ($icon_style) {
       case 'deed_icons':
         $folder = $icon_style . '/';
-        
+
         $icons = explode('-', $license);
-        
+
         foreach ($icons as $value) {
           $images[] = $value . '.png';
         }
-        
+
         break;
       case 'button_srr':
         $folder = '';
-        
+
         $images[] = 'somerights20.png';
-        
+
         break;
       default:
         $folder = $icon_style . '/';
-        
+
         $images[] = $license . '.png';
-        
+
         break;
     }
-    
+
     foreach ($images as $key => $image) {
       $images[$key] = '<img alt="' . t('Creative Commons license icon') . '" src="' . CC_LITE_IMAGE_PATH . $folder . $image . '" />';
     }
-    
+
     $license_info['images'] = $images;
   }
-  
-  return $license_info; 
+
+  return $license_info;
 }
