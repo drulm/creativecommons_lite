@@ -147,15 +147,29 @@ function creativecommons_lite_settings_form() {
  */
 function creativecommons_lite_form_alter(&$form, &$form_state, $form_id) {
   // setting for which content type this will show up
-  if ($form_id == 'node_type_form' && isset($form['identity']['type'])) {
+  if ($form_id == 'node_type_form' 
+      //    && isset($form['identity']['type'])
+          ) {
     $node_type = $form['#node_type']->type;
-    $form['workflow']["creativecommons_lite"] = array(
+    $sub_form = array(
       '#type' => 'checkbox',
       '#title' => t('Allow user to add a Creative Commons license.'),
       '#description' => t('User will be able to select license while adding content. Selected license will be displayed in right block on node view page.'),
       '#return_value' => 1,
       '#default_value' => variable_get("creativecommons_lite_$node_type", 0),
     );
+    $form["creativecommons_lite"] = array(
+      '#type' => 'fieldset',
+      '#collapsible' => 1,
+      '#collapsed' => 1,
+      '#group' => 'additional_settings',
+      '#title' => t('Creative Commons License'),
+      //'#description' => t('User will be able to select license while adding content. Selected license will be displayed in right block on node view page.'),
+      'node_submitted' => $sub_form,
+      //'#return_value' => 1,
+      //'#default_value' => variable_get("creativecommons_lite_$node_type", 0),
+    );
+    
   }
   elseif (isset($form["form_id"]["#id"]) && $form["form_id"]["#id"] == "edit-node-type-form") {
     // add license selection field to node
@@ -258,7 +272,10 @@ function creativecommons_lite_block_info() {
     'enabled' => 1, // default make it enabled
     'region' => 'sidebar_first',
     'visibility' => BLOCK_VISIBILITY_PHP,
+    /*
     'pages' => '<?php global $user; if ($user->uid == 0) return TRUE; else return FALSE; ?>',
+    */
+    'pages' => '',
   );
   return $blocks;
 }
@@ -272,7 +289,7 @@ function creativecommons_lite_block_view($delta = '') {
       }
       $nid = (int) arg(1);
       $node = node_load($nid);
-      if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2) == 'view') || (arg(2) == '') ) ) {
+      if ( $node && arg(0) == 'node' /*&& ( $node->cc_lite_license )*/ && ( (arg(2) == 'view') || (arg(2) == '') ) ) {
         if ($node->cc_lite_license) {
           // append html
           $output = get_license_html($node->cc_lite_license);
@@ -288,7 +305,7 @@ function creativecommons_lite_block_view($delta = '') {
 /**
  * Implementation of hook_block().
  */
-/*function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
+function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
  // listing of blocks, such as on the admin/block page
  if ($op == "list") {
  $blocks[0] = array(
@@ -326,7 +343,7 @@ function creativecommons_lite_block_view($delta = '') {
  }
  }
  }
- */
+ 
 
 /**
  * Return array of available licenses

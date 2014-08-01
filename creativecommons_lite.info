@@ -3,4 +3,3 @@ description = Allow User to add Creative Commons Licenses for selected content t
 package = Licenses
 project = "drupal"
 core = "7.x"
-
