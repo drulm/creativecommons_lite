@@ -44,26 +44,8 @@ function creativecommons_lite_uninstall() {
   variable_del('creativecommons_lite_mandatory');
   variable_del('creativecommons_lite_default_licence');
   variable_del('creativecommons_lite_default_license');
-  variable_del('creativecommons_lite_licence_options');
-  variable_del('creativecommons_lite_license_options');
   variable_del('creativecommons_lite_jurisdiction');
   variable_del('creativecommons_lite_icon_style');
   variable_del('creativecommons_lite_no_text');
-
-  // TODO: remove the content type variables
-  return;
-}
-
-function creativecommons_lite_update_6000() {
-  $ret = array();
-  if (db_column_exists('creativecommons_lite', 'licence')) {
-    db_change_field($ret, 'creativecommons_lite', 'licence', 'license', array('type' => 'varchar', 'length' => 12, 'not null' => TRUE));
-  }
-  variable_set('creativecommons_lite_default_license', variable_get('creativecommons_lite_default_licence', ''));
-  variable_del('creativecommons_lite_default_licence');
-
-  variable_set('creativecommons_lite_license_options', variable_get('creativecommons_lite_licence_options', ''));
-  variable_del('creativecommons_lite_licence_options');
-
   return;
 }

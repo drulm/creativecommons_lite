@@ -42,7 +42,7 @@ function creativecommons_lite_permission() {
 function creativecommons_lite_menu() {
   $items = array();
 
-  $items['admin/settings/creativecommons-lite'] = array(
+  $items['admin/config/content/creativecommons-lite'] = array(
     'title' => 'Creative Commons Lite',
     'description' => 'Configure the Creative Commons license settings.',
     'page callback' => 'drupal_get_form',
