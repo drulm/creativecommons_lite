@@ -1,12 +1,13 @@
 <?php
-
 /**
  * This module will display Creative Common licenses for selected content type
  *
  */
 
+
 define('CC_LITE_PATH', drupal_get_path('module', 'creativecommons_lite'));
 define('CC_LITE_IMAGE_PATH', base_path() . CC_LITE_PATH . '/images/');
+
 
 /** from creativecommons.module
  *
@@ -15,13 +16,12 @@ define('CC_LITE_IMAGE_PATH', base_path() . CC_LITE_PATH . '/images/');
 function para() {
   $args = func_get_args();
   $p = '';
-
   foreach ($args as $c) {
     $p .= "<p>$c</p>";
   }
-
   return $p;
 }
+
 
 /**
  * Implementation of hook_perm().
@@ -41,7 +41,6 @@ function creativecommons_lite_permission() {
  */
 function creativecommons_lite_menu() {
   $items = array();
-
   $items['admin/config/content/creativecommons-lite'] = array(
     'title' => 'Creative Commons Lite',
     'description' => 'Configure the Creative Commons license settings.',
@@ -49,7 +48,6 @@ function creativecommons_lite_menu() {
     'page arguments' => array('creativecommons_lite_settings_form'),
     'access arguments' => array('administer creative commons lite'),
   );
-
   return $items;
 }
 
@@ -62,7 +60,6 @@ function creativecommons_lite_help($path, $arg) {
   $cc_lite_desc_short = t('Assign a Creative Commons license to content that appears on the site.');
   $cc_lite_node = t('Attaching a Creative Commons license to a node within Drupal can designate the content of that node, as well as any attached files, as Creatively Commoned material.');
   $cc_lite_url = sprintf(t('Visit %s for more information.'), '<a href="http://creativecommons.org/learnmore">' . t('the Creative Commons website') . '</a>');
-
   switch ($path) {
     case 'admin/modules#description':
       return $cc_lite_desc_short;
@@ -80,21 +77,18 @@ function creativecommons_lite_help($path, $arg) {
 function creativecommons_lite_settings_form() {
   // Get all CC license types
   $types = creativecommons_lite_get_license_array();
-
   $form['creativecommons_lite_mandatory'] = array(
     '#type' => 'checkbox',
     '#title' => t('Mandatory license specification'),
     '#description' => t('Specifies whether or not the user is required to specify a license.'),
     '#default_value' => variable_get('creativecommons_lite_mandatory', 0),
   );
-
   $form['creativecommons_lite_no_text'] = array(
     '#type' => 'checkbox',
     '#title' => t('Don\'t display license text'),
     '#description' => t('Specifies whether or not the license text should be displayed underneath the license icons.'),
     '#default_value' => variable_get('creativecommons_lite_no_text', 0),
   );
-
   $license_icons = array(
     'buttons_large' => '<img alt="' . $types['by-nc-sa'] . '" src="' . CC_LITE_IMAGE_PATH . 'buttons_large/by-nc-sa.png" />',
     'buttons_small' => '<img alt="' . $types['by-nc-sa'] . '" src="' . CC_LITE_IMAGE_PATH . 'buttons_small/by-nc-sa.png" />',
@@ -102,14 +96,12 @@ function creativecommons_lite_settings_form() {
     'button_srr' => '<img alt="' . t('Some Rights Reserved') . '" src="' . CC_LITE_IMAGE_PATH . 'somerights20.png" />',
     'none' => t('No icon'),
   );
-
   $form['creativecommons_lite_icon_style'] = array(
     '#type' => 'radios',
     '#title' => t('License icon style'),
     '#options' => $license_icons,
     '#default_value' => variable_get('creativecommons_lite_icon_style', 'buttons_large'),
   );
-
   $form['creativecommons_lite_default_license'] = array(
     '#type' => 'select',
     '#title' => t('Default license'),
@@ -117,10 +109,8 @@ function creativecommons_lite_settings_form() {
     '#options' => $types,
     '#default_value' => variable_get('creativecommons_lite_default_license', ''),
   );
-
   // Remove the first empty option from the license types
   array_shift($types);
-
   $form['creativecommons_lite_license_options'] = array(
     '#type' => 'select',
     '#title' => t('Allowed licenses'),
@@ -129,7 +119,6 @@ function creativecommons_lite_settings_form() {
     '#multiple' => TRUE,
     '#default_value' => variable_get('creativecommons_lite_license_options', array_keys($types)),
   );
-
   $form['creativecommons_lite_jurisdiction'] = array(
     '#type' => 'select',
     '#title' => t('License jurisdiction'),
@@ -137,8 +126,15 @@ function creativecommons_lite_settings_form() {
     '#options' => creativecommons_lite_get_jurisdiction_array('names'),
     '#default_value' => variable_get('creativecommons_lite_jurisdiction', ''),
   );
-
   return system_settings_form($form);
+}
+
+
+function creativecommons_lite_form_submit($form, &$form_state) {
+  if (isset($form['#node_type']->type)) {
+    $node_type = $form['#node_type']->type;
+    variable_set("creativecommons_lite_" . $node_type, $form_state['values']['cc_submit']);
+  }
 }
 
 
@@ -147,82 +143,72 @@ function creativecommons_lite_settings_form() {
  */
 function creativecommons_lite_form_alter(&$form, &$form_state, $form_id) {
   // setting for which content type this will show up
-  if ($form_id == 'node_type_form' 
-      //    && isset($form['identity']['type'])
-          ) {
-    $node_type = $form['#node_type']->type;
+  if (isset($form['#node_type']->type)) {
+    $node_type = $form["#node_type"]->type;
+  }
+  if ($form_id == 'node_type_form' && isset($node_type)) {
     $sub_form = array(
       '#type' => 'checkbox',
       '#title' => t('Allow user to add a Creative Commons license.'),
       '#description' => t('User will be able to select license while adding content. Selected license will be displayed in right block on node view page.'),
-      '#return_value' => 1,
       '#default_value' => variable_get("creativecommons_lite_$node_type", 0),
     );
-    $form["creativecommons_lite"] = array(
+    $form['creativecommons_lite'] = array(
       '#type' => 'fieldset',
       '#collapsible' => 1,
       '#collapsed' => 1,
       '#group' => 'additional_settings',
       '#title' => t('Creative Commons License'),
-      //'#description' => t('User will be able to select license while adding content. Selected license will be displayed in right block on node view page.'),
-      'node_submitted' => $sub_form,
-      //'#return_value' => 1,
-      //'#default_value' => variable_get("creativecommons_lite_$node_type", 0),
+      'cc_submit' => $sub_form,
     );
-    
+    $form['#submit'][] = 'creativecommons_lite_form_submit';
   }
-  elseif (isset($form["form_id"]["#id"]) && $form["form_id"]["#id"] == "edit-node-type-form") {
+  elseif (isset($form["form_id"]["#id"]) && isset($form['#node_edit_form']) == 1) {
+    if (isset($form['type']['#value'])) {
+      $node_type = $form['type']['#value'];
+    }
     // add license selection field to node
-    $node = $form['#node_type']; // got form
-    if (variable_get("creativecommons_lite_$node->type", 0)) {
-      $form = array_merge($form, creativecommons_lite_form($node));
-      $form['creativecommons_lite']['#weight'] = 29; //  30 comment and menu and after that author and publishing
+    if (variable_get("creativecommons_lite_$node_type", 0)) {
+      if (isset($form['#node']->nid)) {
+        $nid = $form['#node']->nid;
+        $node = node_load($nid);
+      }
+      $description = para(
+        sprintf(t('%s help you share your work while keeping your copyright. Other people can copy and distribute your work provided they give you credit&mdash;and only on the conditions you specify here.'), '<a href="http://creativecommons.org/learn/licenses/">' . t('Creative Commons licenses') . '</a>') .
+        ' ' . sprintf(t('Visit the Creative Commons website for an %s'), '<a href="http://creativecommons.org/about/licenses/meet-the-licenses">' . t('explanation of the different licenses') . '.</a>'),
+        sprintf(t('Choose the %s if you want to offer your work with no conditions.'), '<a href="http://creativecommons.org/licenses/publicdomain/">' . t('Public Domain license') . '</a>')
+      );
+      $form['creativecommons_lite'] = array(
+        '#type' => 'fieldset',
+        '#access' => 1,
+        '#title' => t('Creative Commons license'),
+        '#collapsible' => 1,
+        '#collapsed' => 1,
+        '#group' => 'additional_settings',
+        '#description' => $description,
+        '#tree' => 1,
+      );
+      $types = array();
+      // available license types
+      $types = creativecommons_lite_get_license_array(variable_get('creativecommons_lite_license_options', NULL));
+      // default to the default license or the first license if no default license is set except for existing nodes.
+      if (isset($node)) {
+        if (!array_key_exists('cc_lite_license', $node)) {
+          $node->cc_lite_license = variable_get('creativecommons_lite_default_license', key($types));
+        }
+      }
+      $form['creativecommons_lite'][] = array('#value' => $description);
+      $form['creativecommons_lite']['cclite_select_license_form']['cc_lite_license'] = array(
+        '#type' => 'select',
+        '#tree' => FALSE,
+        '#title' => t('Select a license'),
+        '#default_value' => isset($node) ? $node->cc_lite_license : 0,
+        '#options' => $types,
+        '#required' => variable_get('creativecommons_lite_mandatory', FALSE),
+        '#weight' => 29,
+      );
     }
   }
-}
-
-
-/**
- * Implementation of hook_form().
- */
-function creativecommons_lite_form($node) {
-  $description = para(
-    sprintf(t('%s help you share your work while keeping your copyright. Other people can copy and distribute your work provided they give you credit&mdash;and only on the conditions you specify here.'), '<a href="http://creativecommons.org/learn/licenses/">' . t('Creative Commons licenses') . '</a>') .
-    ' ' . sprintf(t('Visit the Creative Commons website for an %s'), '<a href="http://creativecommons.org/about/licenses/meet-the-licenses">' . t('explanation of the different licenses') . '.</a>'),
-    sprintf(t('Choose the %s if you want to offer your work with no conditions.'), '<a href="http://creativecommons.org/licenses/publicdomain/">' . t('Public Domain license') . '</a>')
-  );
-
-  $types = array();
-
-  // available license types
-  $types = creativecommons_lite_get_license_array(variable_get('creativecommons_lite_license_options', NULL));
-
-  // default to the default license or the first license if no default license is set except for existing nodes.
-  if (!array_key_exists('cc_lite_license', $node)) {
-    $node->cc_lite_license = variable_get('creativecommons_lite_default_license', key($types));
-  }
-
-  $form['creativecommons_lite'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Creative Commons license'),
-    '#attributes' => array('class' => 'attachments'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#tree' => TRUE,
-  );
-
-  $form['creativecommons_lite'][] = array('#value' => $description);
-
-  $form['creativecommons_lite']['cclite_select_license_form']['cc_lite_license'] = array(
-    '#type' => 'select',
-    '#tree' => FALSE,
-    '#title' => t('Select a license'),
-    '#default_value' => $node->cc_lite_license,
-    '#options' => $types,
-    '#required' => variable_get('creativecommons_lite_mandatory', FALSE),
-  );
-
-  return $form;
 }
 
 
@@ -244,41 +230,36 @@ function get_license_html($license) {
         )
                   ) . "\n";
       }
-
       $html .= '<br />';
     }
   }
-
   if (!variable_get('creativecommons_lite_no_text', 0)) {
     $html .= t('This work is licensed under a') .
             ' ' . l($license_info['license_name'] .
             ' ' . t('Creative Commons license'), $license_info['license_uri'], array('attributes' => array('rel' => 'license'))) .
             "<br />\n";
   }
-
   $html .= "<!--/Creative Commons License-->\n";
-
   return $html;
 }
+
 
 /**
  * Implementation of hook_block_info().
  */
 function creativecommons_lite_block_info() {
   $blocks['creative_common_lite'] = array(
-    'info' => t('Creative Commons license'),
+    'info' => t('Creative Commons License'),
     'status' => TRUE,
     'weight' => 0,
-    'enabled' => 1, // default make it enabled
+    'status' => 1, // default make it enabled
     'region' => 'sidebar_first',
-    'visibility' => BLOCK_VISIBILITY_PHP,
-    /*
-    'pages' => '<?php global $user; if ($user->uid == 0) return TRUE; else return FALSE; ?>',
-    */
+    'visibility' => BLOCK_VISIBILITY_NOTLISTED,
     'pages' => '',
   );
   return $blocks;
 }
+
 
 function creativecommons_lite_block_view($delta = '') {
   $block = array();
@@ -287,9 +268,9 @@ function creativecommons_lite_block_view($delta = '') {
       if (!is_numeric(arg(1))) {
         return;
       }
-      $nid = (int) arg(1);
+      $nid = (int)arg(1);
       $node = node_load($nid);
-      if ( $node && arg(0) == 'node' /*&& ( $node->cc_lite_license )*/ && ( (arg(2) == 'view') || (arg(2) == '') ) ) {
+      if ($node && arg(0) == 'node' && isset($node->cc_lite_license) && ((arg(2) == 'view') || (arg(2) == ''))) {
         if ($node->cc_lite_license) {
           // append html
           $output = get_license_html($node->cc_lite_license);
@@ -302,48 +283,6 @@ function creativecommons_lite_block_view($delta = '') {
   }
 }
 
-/**
- * Implementation of hook_block().
- */
-function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
- // listing of blocks, such as on the admin/block page
- if ($op == "list") {
- $blocks[0] = array(
- 'info' => t('Creative Commons license'),
- 'weight' => 0,
- 'enabled' => 1,   // default make it enabled
- 'region' => 'right',  // garland has no right default
- 'theme'=>'garland',
- );
-
- return $blocks;
- }
- elseif ($op == 'view') {
- switch ($delta) {
- case 0:
- if (!is_numeric(arg(1))) {
- return;
- }
-
- $nid = (int)arg(1);
- $node = node_load($nid);
-
- if ( $node && arg(0) == 'node' && ( $node->cc_lite_license ) && ( (arg(2)=='view') || (arg(2)=='') ) ) {
- if ($node->cc_lite_license) {
- // append html
- $output = get_license_html($node->cc_lite_license);
-
- if ($output) {
- $block['content'] =  '<p class="creativecommons">'.$output.'</p>';
- }
- }
- }
-
- return $block;
- }
- }
- }
- 
 
 /**
  * Return array of available licenses
@@ -352,7 +291,6 @@ function creativecommons_lite_block($op='list', $delta=0, $edit = array()) {
  */
 function creativecommons_lite_get_license_array($options = NULL) {
   $types = array();
-
   $types['by'] = t('Attribution');
   $types['by-nd'] = t('Attribution No Derivatives');
   $types['by-nc-nd'] =  t('Attribution Non-commercial No Derivatives');
@@ -360,15 +298,12 @@ function creativecommons_lite_get_license_array($options = NULL) {
   $types['by-nc-sa'] = t('Attribution Non-commercial Share Alike');
   $types['by-sa'] =  t('Attribution Share Alike');
   $types['publicdomain'] = t('Public Domain');
-
   // Only include the provided options
   if (is_array($options)) {
     $types = array_intersect_key($types, $options);
   }
-
   // Add an empty option to the beginning of the types
   $types = array_merge(array('' => ''), $types);
-
   return $types;
 }
 
@@ -554,24 +489,19 @@ function creativecommons_lite_get_jurisdiction_array($filter = NULL) {
       'version' => '3.0',
     ),
   );
-
   switch ($filter) {
     case 'names':
       $names = array();
-
       foreach ($jurisdictions as $key => $value) {
         $names[$key] = $value['name'];
       }
-
       return $names;
       break;
     case 'versions':
       $versions = array();
-
       foreach ($jurisdictions as $key => $value) {
         $versions[$key] = $value['version'];
       }
-
       return $versions;
       break;
     default:
@@ -580,107 +510,78 @@ function creativecommons_lite_get_jurisdiction_array($filter = NULL) {
   }
 }
 
-/**
- * Implementation of hook_nodeapi().
- */
-function creativecommons_lite_nodeapi(&$node, $op, $a3, $a4) {
-  switch ($op) {
-    case 'validate':
-      break;
-    case 'load':
-      if (variable_get("creativecommons_lite_$node->type", 0)) {
-        $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid=%d",   $node->nid);
-        $res = db_fetch_array($result);
-        $node->cc_lite_license = $res['license'];
-      }
-
-      break;
-    case 'view':
-      // added block view
-      break;
-    case 'insert':
-      if (variable_get("creativecommons_lite_$node->type", 0)) {
-        $result = db_query("INSERT INTO {creativecommons_lite} (nid, license) VALUES (%d, '%s')",   $node->nid, $node->cc_lite_license);
-      }
-
-      break;
-    case 'update':
-      if (variable_get("creativecommons_lite_$node->type", 0)) {
-        //check to see if this node already has a license
-        $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid = %d",   $node->nid);
-        $license = db_fetch_object($result);
-
-        if (!$license) {
-          return creativecommons_lite_nodeapi($node, 'insert', $a3, $a4);
-        }
-
-        // update node license
-        $result = db_query("UPDATE {creativecommons_lite} SET license='%s' WHERE nid=%d ", $node->cc_lite_license, $node->nid);
-      }
-
-      break;
-    case 'delete':
-      if (variable_get("creativecommons_lite_$node->type", 0)) {
-        db_query("DELETE FROM {creativecommons_lite} WHERE nid=%d", $node->nid);
-      }
-
-      break;
-    case NODE_BUILD_RSS:
-      break;
+function creativecommons_lite_node_load($nodes, $types) {
+  $nids = array_keys($nodes);
+  $nid = $nids[0];
+  $node = $nodes[$nid];
+  if (variable_get("creativecommons_lite_$node->type", 0)) {
+    $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid = :nid",  array(':nid' => $nid));
+    $res = $result->fetchObject();
+    if (isset($res->license)) {
+      $node->cc_lite_license = $res->license;
+    }
   }
+}
 
-  return $output;
+function creativecommons_lite_node_insert($node) {
+  if (variable_get("creativecommons_lite_$node->type", 0)) {
+    $result = db_query("INSERT INTO {creativecommons_lite} (nid, license) VALUES (:nid, :lic)",   array(':nid' => $node->nid, ':lic' => $node->cc_lite_license));
+  }
+}
+
+function creativecommons_lite_node_update($node) {
+  if (variable_get("creativecommons_lite_$node->type", 0)) {
+    //check to see if this node already has a license
+    $result = db_query("SELECT * FROM {creativecommons_lite} WHERE nid = :nid", array(':nid' => $node->nid));
+    $license = $result->fetchObject();
+    if (!$license) {
+      return creativecommons_lite_node_insert($node);
+    }
+    // update node license
+    $result = db_query("UPDATE {creativecommons_lite} SET license = :lic  WHERE nid = :nid ", array(':lic' => $node->cc_lite_license, ':nid' => $node->nid));
+  }
+}
+
+function creativecommons_lite__node_delete($node) {
+  if (variable_get("creativecommons_lite_$node->type", 0)) {
+    db_query("DELETE FROM {creativecommons_lite} WHERE nid = :nid", array(':nid' => $node->nid));
+  }
 }
 
 
 function get_license_info($license) {
   $license_info = array();
   $images = array();
-
   $uri = 'http://creativecommons.org/licenses/';
   $jurisdiction = variable_get('creativecommons_lite_jurisdiction', '');
   $icon_style = variable_get('creativecommons_lite_icon_style', 'buttons_large');
-
   $types = creativecommons_lite_get_license_array();
   $versions = creativecommons_lite_get_jurisdiction_array('versions');
-
   $license_version = $versions[$jurisdiction] . '/' . ($jurisdiction != '' ? $jurisdiction . '/' : '');
-
   $license_info['license_name'] = $types[$license];
   $license_info['license_uri'] = $uri . $license . '/' . ($license != 'publicdomain' ? $license_version : '');
-
   if ($icon_style != 'none') {
     switch ($icon_style) {
       case 'deed_icons':
         $folder = $icon_style . '/';
-
         $icons = explode('-', $license);
-
         foreach ($icons as $value) {
           $images[] = $value . '.png';
         }
-
         break;
       case 'button_srr':
         $folder = '';
-
         $images[] = 'somerights20.png';
-
         break;
       default:
         $folder = $icon_style . '/';
-
         $images[] = $license . '.png';
-
         break;
     }
-
     foreach ($images as $key => $image) {
       $images[$key] = '<img alt="' . t('Creative Commons license icon') . '" src="' . CC_LITE_IMAGE_PATH . $folder . $image . '" />';
     }
-
     $license_info['images'] = $images;
   }
-
   return $license_info;
 }
