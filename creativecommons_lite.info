@@ -1,5 +1,5 @@
 name = Creative Commons Lite
 description = Allow User to add Creative Commons Licenses for selected content type.
 package = Licenses
-project = "drupal"
-core = "7.x"
+project = Drupal
+core = 7.x

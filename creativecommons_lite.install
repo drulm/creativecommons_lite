@@ -1,7 +1,12 @@
 <?php
+/**
+ * @file
+ * The .install file for creative_commons_lite
+ */
+
 
 /**
- * Implementation of hook_schema().
+ * Implementats hook_schema().
  */
 function creativecommons_lite_schema() {
   $schema['creativecommons_lite'] = array(
@@ -29,16 +34,16 @@ function creativecommons_lite_schema() {
 
 
 /**
- * Implementation of hook_install()
+ * Implementats hook_install()
  */
 function creativecommons_lite_install() {
-  drupal_set_message(t('Creative Commons Lite module installed.'));
+  drupal_set_message(st('Creative Commons Lite module installed.'));
   return;
 }
 
 
 /**
- * Implementation of hook_uninstall().
+ * Implementats hook_uninstall().
  */
 function creativecommons_lite_uninstall() {
   variable_del('creativecommons_lite_mandatory');
