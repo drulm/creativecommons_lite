@@ -1,5 +1,5 @@
 Creativecommons Lite module
-
+ 
 OVERVIEW
 
 This modules allows users to add creativecommons license to any type of drupal node. License will be shown as block on node view page. 
